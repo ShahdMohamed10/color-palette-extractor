@@ -4,6 +4,11 @@ from collections import Counter
 import os
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
+import warnings
+
+# Silence the specific warning about CPU cores
+warnings.filterwarnings("ignore", category=UserWarning, 
+                      message="Could not find the number of physical cores")
 
 def load_image(image_file):
     """Load an image from a file object and return it as a PIL Image."""
@@ -54,8 +59,8 @@ def extract_colors(img, num_colors=5):
         # Take a sample of pixels to speed up processing for large images
         pixels = shuffle(pixels, random_state=0)[:10000]
         
-        # Perform k-means clustering
-        kmeans = KMeans(n_clusters=num_colors, random_state=0, n_init=10)
+        # Perform k-means clustering - specifying n_jobs=1 to avoid multiprocessing issues
+        kmeans = KMeans(n_clusters=num_colors, random_state=0, n_init=10, n_jobs=1)
         kmeans.fit(pixels)
         
         # Get cluster centers (these are our colors)
