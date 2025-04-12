@@ -90,10 +90,10 @@
         
         <div class="palette">
             <h2>Color Palette</h2>
-            {% if palette_image %}
-            <img src="{{ palette_image }}" alt="Color Palette">
+            {% if palette_html %}
+            {{ palette_html | safe }}
             {% else %}
-            <p>Palette image not available</p>
+            <p>Palette not available</p>
             {% endif %}
         </div>
         

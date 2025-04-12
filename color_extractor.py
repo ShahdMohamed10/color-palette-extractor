@@ -1,9 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import io
-import base64
 from PIL import Image
 from sklearn.cluster import KMeans
 from collections import Counter
@@ -48,45 +43,30 @@ def extract_colors(img_array, num_colors=5):
 
 def generate_palette_image(colors):
     """
-    Generate an image of the color palette.
+    Generate a simple HTML representation of colors instead of an image.
     
     Args:
         colors: List of RGB colors
         
     Returns:
-        Base64 encoded string of the palette image
+        HTML string representation of the color palette
     """
-    # Create a figure for the palette
-    fig = Figure(figsize=(10, 2))
-    canvas = FigureCanvas(fig)
+    # Generate HTML color boxes instead of an image
+    html = '<div style="display: flex; width: 100%;">'
     
-    # Plot each color as a rectangle
-    for i, color in enumerate(colors):
-        ax = fig.add_subplot(1, len(colors), i+1)
-        ax.set_axis_off()
-        
-        # Create a solid color rectangle
-        rgb = color / 255.0  # Convert to 0-1 range for matplotlib
-        ax.fill([0, 1, 1, 0], [0, 0, 1, 1], color=rgb)
-        
-        # Add RGB values as text
+    for color in colors:
         hex_color = '#{:02x}{:02x}{:02x}'.format(color[0], color[1], color[2])
-        ax.text(0.5, 0.5, hex_color, 
-                horizontalalignment='center',
-                verticalalignment='center',
-                color='white' if sum(color) < 380 else 'black')
+        text_color = 'white' if sum(color) < 380 else 'black'
+        
+        html += f'''
+        <div style="flex: 1; height: 100px; background-color: {hex_color}; 
+                  display: flex; justify-content: center; align-items: center;">
+            <span style="color: {text_color}; font-family: monospace;">{hex_color}</span>
+        </div>
+        '''
     
-    fig.tight_layout()
-    
-    # Save the figure to a bytes buffer
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    
-    # Encode the image to base64
-    img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    
-    return img_base64
+    html += '</div>'
+    return html
 
 def get_color_data(colors):
     """

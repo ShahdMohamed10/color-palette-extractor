@@ -44,8 +44,8 @@ def api_extract_colors():
         img_array = load_image(file)
         colors = extract_colors(img_array, num_colors)
         
-        # Generate palette image
-        palette_base64 = generate_palette_image(colors)
+        # Generate palette HTML
+        palette_html = generate_palette_image(colors)
         
         # Convert colors to a more API-friendly format
         color_data = get_color_data(colors)
@@ -53,7 +53,7 @@ def api_extract_colors():
         # Return the results
         return jsonify({
             'colors': color_data,
-            'palette_image': f'data:image/png;base64,{palette_base64}'
+            'palette_html': palette_html
         })
     
     except Exception as e:
@@ -88,8 +88,8 @@ def extract():
             img_array = load_image(open(file_path, 'rb'))
             colors = extract_colors(img_array, num_colors)
             
-            # Generate palette image
-            palette_base64 = generate_palette_image(colors)
+            # Generate palette HTML
+            palette_html = generate_palette_image(colors)
             
             # Convert colors to a more template-friendly format
             color_data = get_color_data(colors)
@@ -97,7 +97,7 @@ def extract():
             # Return the results
             return render_template('result.html', 
                                   colors=color_data,
-                                  palette_image=f'data:image/png;base64,{palette_base64}',
+                                  palette_html=palette_html,
                                   image_src=url_for('static', filename=f'uploads/{filename}'))
         
         except Exception as e:
