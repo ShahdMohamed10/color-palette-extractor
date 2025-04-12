@@ -2,6 +2,8 @@ import numpy as np
 from PIL import Image
 from collections import Counter
 import os
+from sklearn.cluster import KMeans
+from sklearn.utils import shuffle
 
 def load_image(image_file):
     """Load an image from a file object and return it as a PIL Image."""
@@ -12,8 +14,8 @@ def load_image(image_file):
         if img.mode != 'RGB':
             img = img.convert('RGB')
         
-        # Resize image for processing
-        img = img.resize((100, 100))
+        # Resize image for processing, but keep it larger than before for better color representation
+        img = img.resize((200, 200))
         
         return img
     except Exception as e:
@@ -28,8 +30,8 @@ def load_image(image_file):
 
 def extract_colors(img, num_colors=5):
     """
-    Extract dominant colors using PIL's quantize method instead of K-means.
-    Much simpler and more reliable than scikit-learn.
+    Extract dominant colors using K-means clustering.
+    More accurate for finding representative colors than quantization.
     
     Args:
         img: PIL Image
@@ -43,21 +45,30 @@ def extract_colors(img, num_colors=5):
         if img.mode != 'RGB':
             img = img.convert('RGB')
             
-        # Use PIL's quantize to reduce colors (much simpler than K-means)
-        img_quantized = img.quantize(colors=num_colors * 2, method=2)
-        img_palette = img_quantized.convert('RGB')
+        # Convert PIL image to numpy array
+        img_array = np.array(img)
         
-        # Get all pixels
-        pixels = list(img_palette.getdata())
+        # Reshape the array to a list of pixels
+        pixels = img_array.reshape(-1, 3)
         
-        # Count occurrences of each color
-        color_count = Counter(pixels)
+        # Take a sample of pixels to speed up processing for large images
+        pixels = shuffle(pixels, random_state=0)[:10000]
         
-        # Get the most common colors
-        most_common = color_count.most_common(num_colors)
-        colors = [np.array(color) for color, _ in most_common]
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=num_colors, random_state=0, n_init=10)
+        kmeans.fit(pixels)
         
-        return colors
+        # Get cluster centers (these are our colors)
+        colors = kmeans.cluster_centers_.astype(int)
+        
+        # Count occurrences of each label
+        labels = kmeans.predict(pixels)
+        counts = Counter(labels)
+        
+        # Sort colors by frequency (most common first)
+        sorted_colors = [colors[i] for i in sorted(counts.keys(), key=lambda x: -counts[x])]
+        
+        return [np.array(color) for color in sorted_colors]
     except Exception as e:
         print(f"Error extracting colors: {e}")
         # Return some default colors as fallback
