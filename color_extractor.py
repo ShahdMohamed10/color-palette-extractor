@@ -1,11 +1,10 @@
 import numpy as np
 from PIL import Image
-from sklearn.cluster import KMeans
 from collections import Counter
 import os
 
 def load_image(image_file):
-    """Load an image from a file object and return it as a numpy array."""
+    """Load an image from a file object and return it as a PIL Image."""
     try:
         img = Image.open(image_file)
         
@@ -13,56 +12,50 @@ def load_image(image_file):
         if img.mode != 'RGB':
             img = img.convert('RGB')
         
-        # Resize image for processing (smaller for efficiency)
-        img_for_processing = img.resize((100, 100))
+        # Resize image for processing
+        img = img.resize((100, 100))
         
-        # Convert to array with explicit dtype
-        return np.array(img_for_processing, dtype=np.float64)
+        return img
     except Exception as e:
         print(f"Error loading image: {e}")
-        # Return a small colored image as fallback
-        return np.array([[[255, 0, 0], [0, 255, 0]], [[0, 0, 255], [255, 255, 0]]], dtype=np.float64)
+        # Create a fallback image (2x2 color grid)
+        fallback = Image.new('RGB', (2, 2))
+        fallback.putpixel((0, 0), (255, 0, 0))  # Red
+        fallback.putpixel((1, 0), (0, 255, 0))  # Green
+        fallback.putpixel((0, 1), (0, 0, 255))  # Blue
+        fallback.putpixel((1, 1), (255, 255, 0))  # Yellow
+        return fallback
 
-def extract_colors(img_array, num_colors=5):
+def extract_colors(img, num_colors=5):
     """
-    Extract dominant colors from an image using K-means clustering.
+    Extract dominant colors using PIL's quantize method instead of K-means.
+    Much simpler and more reliable than scikit-learn.
     
     Args:
-        img_array: NumPy array representation of the image
+        img: PIL Image
         num_colors: Number of colors to extract
         
     Returns:
         List of colors in RGB format
     """
     try:
-        # Reshape the image to be a list of pixels
-        pixels = img_array.reshape(-1, 3)
+        # Convert to RGB if not already
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+            
+        # Use PIL's quantize to reduce colors (much simpler than K-means)
+        img_quantized = img.quantize(colors=num_colors * 2, method=2)
+        img_palette = img_quantized.convert('RGB')
         
-        # Handle images with very few unique colors
-        unique_pixels = np.unique(pixels, axis=0)
-        if len(unique_pixels) < num_colors:
-            # If we have fewer unique colors than requested, just return those
-            return unique_pixels.astype(int)
+        # Get all pixels
+        pixels = list(img_palette.getdata())
         
-        # Perform k-means clustering with explicit parameters for compatibility
-        kmeans = KMeans(
-            n_clusters=num_colors,
-            random_state=42,
-            n_init=10 if hasattr(KMeans, 'n_init') else None,  # Handle different sklearn versions
-            max_iter=300
-        )
-        kmeans.fit(pixels)
+        # Count occurrences of each color
+        color_count = Counter(pixels)
         
-        # Get the colors as RGB values in the range [0, 255]
-        colors = kmeans.cluster_centers_.astype(int)
-        
-        # Ensure colors are in valid range
-        colors = np.clip(colors, 0, 255)
-        
-        # Sort colors by frequency (number of pixels assigned to each cluster)
-        labels = kmeans.labels_
-        counts = Counter(labels)
-        colors = [colors[i] for i in sorted(counts.keys(), key=lambda x: -counts[x])]
+        # Get the most common colors
+        most_common = color_count.most_common(num_colors)
+        colors = [np.array(color) for color, _ in most_common]
         
         return colors
     except Exception as e:
