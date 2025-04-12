@@ -2,11 +2,15 @@ import numpy as np
 from PIL import Image
 from collections import Counter
 import os
-from sklearn.cluster import KMeans
-from sklearn.utils import shuffle
 import warnings
 
-# Silence the specific warning about CPU cores
+# Set environment variable to avoid the CPU core detection issue
+os.environ["LOKY_MAX_CPU_COUNT"] = "1"
+
+from sklearn.cluster import KMeans
+from sklearn.utils import shuffle
+
+# Filter the specific warning about CPU cores
 warnings.filterwarnings("ignore", category=UserWarning, 
                       message="Could not find the number of physical cores")
 
@@ -59,8 +63,16 @@ def extract_colors(img, num_colors=5):
         # Take a sample of pixels to speed up processing for large images
         pixels = shuffle(pixels, random_state=0)[:10000]
         
-        # Perform k-means clustering - specifying n_jobs=1 to avoid multiprocessing issues
-        kmeans = KMeans(n_clusters=num_colors, random_state=0, n_init=10, n_jobs=1)
+        # Perform k-means clustering with explicit single-thread configuration
+        # Avoiding parallel processing for PythonAnywhere compatibility
+        kmeans = KMeans(
+            n_clusters=num_colors, 
+            random_state=0, 
+            n_init=10,
+            n_jobs=1,           # Force single-thread processing
+            algorithm='auto',
+            max_iter=100        # Reduce iterations for faster processing
+        )
         kmeans.fit(pixels)
         
         # Get cluster centers (these are our colors)
