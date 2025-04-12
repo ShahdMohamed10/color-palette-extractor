@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            margin-bottom: 15px;
+        }
+        .api-info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Palette Extractor</h1>
+        
+        {% if error %}
+        <div class="error">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+        
+        <form action="/extract" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="image">Upload an image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="num_colors">Number of colors:</label>
+                <select id="num_colors" name="num_colors">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5" selected>5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            
+            <button type="submit">Extract Colors</button>
+        </form>
+        
+        <div class="api-info">
+            <h2>API Information</h2>
+            <p>To use the color extraction API, send a POST request to <code>/api/extract-colors</code> with:</p>
+            <ul>
+                <li>Form parameter <code>image</code>: The image file</li>
+                <li>Form parameter <code>num_colors</code>: Number of colors to extract (optional, default is 5)</li>
+            </ul>
+            <p>Example curl command:</p>
+            <pre>curl -X POST -F "image=@path/to/your/image.jpg" -F "num_colors=5" https://your-site.pythonanywhere.com/api/extract-colors</pre>
+        </div>
+    </div>
+</body>
+</html>

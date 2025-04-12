@@ -1,0 +1,6 @@
+flask>=2.0.0
+numpy
+matplotlib
+pillow
+scikit-learn
+gunicorn>=21.0.0

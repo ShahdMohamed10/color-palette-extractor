@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .original-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .original-image img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 5px;
+        }
+        .palette {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .palette img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .color-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            width: 130px;
+        }
+        .color-swatch {
+            height: 80px;
+            border-radius: 3px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Palette Results</h1>
+        
+        <div class="original-image">
+            <h2>Original Image</h2>
+            {% if image_src %}
+            <img src="{{ image_src }}" alt="Original Image">
+            {% else %}
+            <p>Original image not available</p>
+            {% endif %}
+        </div>
+        
+        <div class="palette">
+            <h2>Color Palette</h2>
+            {% if palette_image %}
+            <img src="{{ palette_image }}" alt="Color Palette">
+            {% else %}
+            <p>Palette image not available</p>
+            {% endif %}
+        </div>
+        
+        <h2>Colors</h2>
+        <div class="color-list">
+            {% if colors %}
+                {% for color in colors %}
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: {{ color.hex }};"></div>
+                    <div class="color-info">
+                        <p><strong>{{ color.hex }}</strong></p>
+                        <p>RGB: {{ color.rgb[0] }}, {{ color.rgb[1] }}, {{ color.rgb[2] }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No colors extracted</p>
+            {% endif %}
+        </div>
+        
+        <a href="/" class="back-link"><button type="button">Extract Another Image</button></a>
+    </div>
+</body>
+</html>
